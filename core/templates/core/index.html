@@ -1,19 +1,20 @@
 {% include './base.html' %}
 
 {% block body %}
-<section class="vh-100" style="background-color: #eee;">
+<section class="vh-100" style="background-color: #092e20;">
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
       <div class="col col-lg-9 col-xl-7">
         <div class="card rounded-3">
           <div class="card-body p-4">
 
-            <h4 class="text-center my-3 pb-3">To Do App</h4>
+            <h4 class="text-center my-3 pb-3"><strong>Django Cameroon - Todo App</strong></h4>
 
-            <form class="row row-cols-lg-auto g-3 justify-content-center align-items-center mb-4 pb-2">
+            <form action="{% url 'create-task' %}" method="POST" class="row row-cols-lg-auto g-3 justify-content-center align-items-center mb-4 pb-2">
+              {% csrf_token %}
               <div class="col-12">
                 <div class="form-outline">
-                  <input type="text" id="form1" class="form-control" />
+                  <input type="text" id="form1" class="form-control" name="title" required />
                   <label class="form-label" for="form1">Enter a task here</label>
                 </div>
               </div>
@@ -21,60 +22,84 @@
               <div class="col-12">
                 <button type="submit" class="btn btn-primary">Save</button>
               </div>
-
-              <div class="col-12">
-                <button type="submit" class="btn btn-warning">Get tasks</button>
-              </div>
             </form>
+            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+              <a type="button" href="{% url 'index' %}" class="btn btn-secondary">All</a>
+              <a type="button" href="{% url 'finished-tasks' %}" class="btn btn-success">Finished</a>
+              <a type="button" href="{% url 'unfinished-tasks' %}" class="btn btn-warning">In progress</a>
+              <a type="button" href="{% url 'deleted-tasks' %}" class="btn btn-danger">Deleted</a>
+            </div>
 
             <table class="table mb-4">
               <thead>
                 <tr>
                   <th scope="col">No.</th>
-                  <th scope="col">Todo item</th>
+                  <th scope="col">Task</th>
                   <th scope="col">Status</th>
                   <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <form>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td>Buy groceries for next week</td>
-                    <td>In progress</td>
-                    <td>
-                      <button type="submit" formaction="{% url 'test' %}" class="btn btn-danger">Delete</button>
-                      <button type="submit" class="btn btn-success ms-1">Finished</button>
-                    </td>
-                  </tr>
-                </form>
-                <tr>
-                  <th scope="row">2</th>
-                  <td>Renew car insurance</td>
-                  <td>In progress</td>
-                  <td>
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                    <button type="submit" class="btn btn-success ms-1">Finished</button>
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">3</th>
-                  <td>Sign up for online course</td>
-                  <td>In progress</td>
-                  <td>
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                    <button type="submit" class="btn btn-success ms-1">Finished</button>
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">4</th>
-                  <td>Look for J-One</td>
-                  <td>In progress</td>
-                  <td>
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                    <button type="submit" class="btn btn-success ms-1">Finished</button>
-                  </td>
-                </tr>
+                {% if status == "finished" %}
+                  {% for task in todo_tasks %}
+                    <tr>
+                      <th scope="row">{{ task.id }}</th>
+                      <td>{{ task.title }}</td>
+                      <td>Finished</td>
+                      <td>
+                        <button type="submit" class="btn btn-danger" disabled>Delete</button>
+                        <button type="submit" class="btn btn-success" disabled>Finish</button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                
+                {% elif status == "in_progress" %}
+                  {% for task in todo_tasks %}
+                    <tr>
+                      <th scope="row">{{ task.id }}</th>
+                      <td>{{ task.title }}</td>
+                      <td>In progress</td>
+                      <td>
+                        <a type="button" href="{% url 'delete-task' task.id %}" class="btn btn-danger">Delete</a>
+                        <a type="button" href="{% url 'finish-task' task.id %}" class="btn btn-success">Finish</a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                
+                {% elif status == "deleted" %}
+                  {% for task in todo_tasks %}
+                    <tr>
+                      <th scope="row">{{ task.id }}</th>
+                      <td>{{ task.title }}</td>
+                      <td>Deleted</td>
+                      <td>
+                        <button type="submit" class="btn btn-danger" disabled>Delete</button>
+                        <button type="submit" class="btn btn-success" disabled>Finish</button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                
+                {% else %}
+                  {% for task in todo_tasks %}
+                    <tr>
+                      <th scope="row">{{ task.id }}</th>
+                      <td>{{ task.title }}</td>
+                      {% if task.completed %}
+                        <td>Finished</td>
+                        <td>
+                          <a type="button" href="{% url 'delete-task' task.id %}" class="btn btn-danger">Delete</a>
+                          <button type="button" class="btn btn-success" disabled>Finish</button>
+                        </td>
+                      {% else %}
+                        <td>In progress</td>
+                        <td>
+                          <a type="button" href="{% url 'delete-task' task.id %}" class="btn btn-danger">Delete</a>
+                          <a type="button" href="{% url 'finish-task' task.id %}" class="btn btn-success">Finish</a>
+                        </td>
+                      {% endif %}
+                    </tr>
+                  {% endfor %}
+                {% endif %}
               </tbody>
             </table>
 
