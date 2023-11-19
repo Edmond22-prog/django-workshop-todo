@@ -19,9 +19,9 @@ def create_task(request):
 
 
 def retrieve_finished_tasks(request):
-    finished_tasks = TodoTask.objects.filter(completed=True).order_by(
-        "-updated_date"
-    )
+    finished_tasks = TodoTask.objects.filter(
+        completed=True, deleted=False
+    ).order_by("-updated_date")
     return render(
         request,
         "core/index.html",
